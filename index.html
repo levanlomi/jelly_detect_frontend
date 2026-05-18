@@ -93,7 +93,7 @@
 <body class="min-h-screen p-4 flex flex-col items-center">
 
     <div class="w-full max-w-md flex justify-between items-center mb-6">
-        <h1 class="text-xl font-bold font-sans tracking-tight" id="app-title">Jellyfish Detector Da Nang</h1>
+        <h1 class="text-xl font-bold font-sans tracking-tight" id="app-title">Jellyfish Radar Da Nang</h1>
         <div class="flex gap-2">
             <button id="lang-toggle" class="p-2 card text-sm font-bold shadow-sm transition active:scale-95">EN</button>
             <button id="theme-toggle" class="p-2 card shadow-sm transition active:scale-95">🌙</button>
@@ -171,11 +171,12 @@
                 descMed: "Купаться можно, но посматривайте по сторонам. Возможны редкие медузы.",
                 descHigh: "Настоящий медузий апокалипсис! Заходить в воду крайне не рекомендуется.",
                 
-                howItWorks: "Как работает оценка",
+                howItWorks: "Как работает оценка (4 фактора)",
                 fSeason: "📅 Сезон",
                 fWind: "💨 Ветер",
                 fMoon: "🌕 Луна",
                 fReports: "🚨 Отчеты",
+                people: "чел.",
                 
                 seasonHighDesc: "С мая по сентябрь во Вьетнаме активный сезон. Исторически медуз в этот период больше всего.",
                 seasonLowDesc: "Сейчас низкий сезон. Базовая вероятность встретить медуз минимальна.",
@@ -199,11 +200,12 @@
                 descMed: "Swimming is fine, but keep an eye out. Single jellyfish are possible.",
                 descHigh: "True jellyfish apocalypse! Swimming is strongly discouraged.",
                 
-                howItWorks: "How it works",
+                howItWorks: "How it works (4 factors)",
                 fSeason: "📅 Season",
                 fWind: "💨 Wind",
                 fMoon: "🌕 Moon",
                 fReports: "🚨 Reports",
+                people: "people",
                 
                 seasonHighDesc: "May to September is the active season in Vietnam. Historically, there are more jellyfish.",
                 seasonLowDesc: "It's low season. The base probability of encountering jellyfish is minimal.",
@@ -238,6 +240,7 @@
 
         function updateTexts() {
             const t = translations[currentLang];
+            document.title = t.title; // Обновляем также вкладку браузера
             document.getElementById('app-title').innerText = t.title;
             document.getElementById('status-title').innerText = t.statusTitle;
             document.getElementById('loading-text').innerText = t.loading;
@@ -261,7 +264,6 @@
             const score = data.score;
             const f = data.factors || {};
 
-            // 1. Медузы (зависят от общего балла)
             let jellyCount = 0;
             if (score >= 4 && score <= 7) jellyCount = 2;
             else if (score >= 8) jellyCount = 10;
@@ -279,7 +281,6 @@
                 bg.appendChild(jelly);
             }
 
-            // 2. Луна (если балл за луну > 0)
             if (f.astroScore > 0) {
                 const moon = document.createElement('div');
                 moon.className = 'moon-bg';
@@ -287,7 +288,6 @@
                 bg.appendChild(moon);
             }
 
-            // 3. Ветер (если балл за ветер > 0, рисуем линии ветра)
             if (f.weather > 0) {
                 for (let i = 0; i < 4; i++) {
                     const wind = document.createElement('div');
@@ -320,22 +320,19 @@
                 container.appendChild(clone);
             };
 
-            // Сезон
             const base = factors.base || 2;
             createItem(t.fSeason, `${base}/10`, base > 2 ? t.seasonHighDesc : t.seasonLowDesc, base > 2);
 
-            // Ветер
             const windScore = factors.weather || 0;
             createItem(t.fWind, formatMod(windScore), windScore > 0 ? t.windBadDesc : t.windGoodDesc, windScore > 0);
 
-            // Луна
             const moonScore = factors.astroScore || 0;
             createItem(t.fMoon, formatMod(moonScore), moonScore > 0 ? t.moonBadDesc : t.moonGoodDesc, moonScore > 0);
 
-            // Отчеты
             const reps = factors.totalReportsToday || 0;
             const socWeight = factors.socialWeight || 0;
-            createItem(t.fReports, `${reps} чел. (${formatMod(socWeight)})`, t.reportsDesc, socWeight > 0);
+            // Использование переведенного слова "чел." / "people"
+            createItem(t.fReports, `${reps} ${t.people} (${formatMod(socWeight)})`, t.reportsDesc, socWeight > 0);
         }
 
         function displayScore(data) {
@@ -425,6 +422,16 @@
         applyTheme();
         updateTexts();
         fetchStatus();
+    </script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker успешно зарегистрирован!'))
+                    .catch(err => console.warn('Ошибка регистрации Service Worker:', err));
+            });
+        }
     </script>
 </body>
 </html>
