@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Jellyfish Detector Da Nang</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
@@ -148,6 +153,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
         
+        // Адрес бэкенда на Render.com
         const API_URL = 'https://jellyfish-backend-2p8f.onrender.com'; 
 
         const translations = {
@@ -168,10 +174,9 @@
                 howItWorks: "Как работает оценка",
                 fSeason: "📅 Сезон",
                 fWind: "💨 Ветер",
-                fMoon: "🌒 Луна",
+                fMoon: "🌕 Луна",
                 fReports: "🚨 Отчеты",
                 
-                // Описания факторов
                 seasonHighDesc: "С мая по сентябрь во Вьетнаме активный сезон. Исторически медуз в этот период больше всего.",
                 seasonLowDesc: "Сейчас низкий сезон. Базовая вероятность встретить медуз минимальна.",
                 windBadDesc: "Ветер дует с моря и прибивает теплые верхние слои воды с медузами прямо к берегу.",
@@ -197,7 +202,7 @@
                 howItWorks: "How it works",
                 fSeason: "📅 Season",
                 fWind: "💨 Wind",
-                fMoon: "🌒 Moon",
+                fMoon: "🌕 Moon",
                 fReports: "🚨 Reports",
                 
                 seasonHighDesc: "May to September is the active season in Vietnam. Historically, there are more jellyfish.",
