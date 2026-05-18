@@ -35,18 +35,20 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(128, 128, 128, 0.1);
         }
+        .factor-card {
+            background-color: rgba(128, 128, 128, 0.05);
+            border-radius: 12px;
+        }
         .btn-primary {
             background-color: var(--tg-theme-button-color, #3b82f6);
             color: var(--tg-theme-button-text-color, #ffffff);
             border-radius: 16px;
         }
-        /* Пульсация для загрузки (холодный старт Render) */
         .animate-pulse-fast { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
-        /* Цвета уровней опасности */
-        .danger-low { color: #10B981; } /* Зеленый */
-        .danger-med { color: #F59E0B; } /* Желтый */
-        .danger-high { color: #EF4444; } /* Красный */
+        .danger-low { color: #10B981; } 
+        .danger-med { color: #F59E0B; } 
+        .danger-high { color: #EF4444; } 
     </style>
 </head>
 <body class="min-h-screen p-4 flex flex-col items-center">
@@ -56,6 +58,13 @@
         <div class="flex gap-2">
             <button id="lang-toggle" class="p-2 card text-sm font-bold shadow-sm transition active:scale-95">EN</button>
             <button id="theme-toggle" class="p-2 card shadow-sm transition active:scale-95">🌙</button>
+        </div>
+    </div>
+
+    <div id="moon-banner" class="w-full max-w-md bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl mb-4 hidden border border-indigo-200 dark:border-indigo-700">
+        <div class="flex items-center gap-3">
+            <span class="text-2xl">🌕</span>
+            <p class="text-sm font-medium" id="moon-banner-text">Сизигийный прилив: луна усиливает вероятность медуз у берега.</p>
         </div>
     </div>
 
@@ -69,8 +78,26 @@
 
         <div id="result-state" class="hidden flex flex-col items-center w-full transition-opacity duration-500">
             <div class="text-8xl font-black mb-2 tracking-tighter" id="danger-score">--</div>
-            <div class="text-sm px-4 py-1 rounded-full font-medium mb-4" id="danger-badge">Analyzing...</div>
-            <p class="text-center text-sm opacity-70" id="danger-desc">Based on calendar, wind direction, and live reports.</p>
+            <div class="text-sm px-4 py-1 rounded-full font-medium mb-6 shadow-sm" id="danger-badge">Analyzing...</div>
+            
+            <div class="w-full grid grid-cols-2 gap-2 mt-2 border-t pt-4 border-gray-200 dark:border-gray-700">
+                <div class="factor-card p-3 flex justify-between items-center">
+                    <span class="text-xs opacity-70" id="label-season">📅 Season</span>
+                    <span class="text-sm font-bold" id="val-season">--</span>
+                </div>
+                <div class="factor-card p-3 flex justify-between items-center">
+                    <span class="text-xs opacity-70" id="label-wind">💨 Wind</span>
+                    <span class="text-sm font-bold" id="val-wind">--</span>
+                </div>
+                <div class="factor-card p-3 flex justify-between items-center">
+                    <span class="text-xs opacity-70" id="label-moon">🌒 Moon</span>
+                    <span class="text-sm font-bold" id="val-moon">--</span>
+                </div>
+                <div class="factor-card p-3 flex justify-between items-center">
+                    <span class="text-xs opacity-70" id="label-reports">🚨 Reports</span>
+                    <span class="text-sm font-bold" id="val-reports">--</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -79,53 +106,51 @@
         <button id="report-btn" class="btn-primary w-full py-3.5 font-bold text-lg transition active:scale-95 shadow-md">
             🚨 Report Jellyfish
         </button>
-        <p id="report-thanks" class="text-green-500 text-sm mt-3 hidden font-medium transition-opacity">Thanks! Report recorded.</p>
+        <p id="report-thanks" class="text-green-500 text-sm mt-3 hidden font-medium transition-opacity">Thanks! Report recorded in radar.</p>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // URL твоего будущего бэкенда на Render
-        const API_URL = 'https://jellyfish-backend-7po9.onrender.com'; 
+        // ВАЖНО: Вставь сюда свой URL из Render
+        const API_URL = 'https://levanlomi.github.io/jelly_detect_frontend/'; 
 
-        // Локализация
         const translations = {
             ru: {
                 title: "Радар Медуз Дананг",
                 statusTitle: "Уровень опасности",
-                loading: "Будим сервер...",
-                desc: "На основе сезона, направления ветра и отчетов людей.",
+                loading: "Проверяем радары...",
                 prompt: "Видели сегодня медузу на пляже?",
-                btnReport: "🚨 Сообщить о медузе",
+                btnReport: "🚨 Я видел медузу",
                 btnThanks: "Спасибо! Ваш отчет учтен в радаре.",
                 low: "Безопасно",
                 med: "Будьте внимательны",
-                high: "Апокалипсис"
+                high: "Апокалипсис",
+                moonBanner: "Сизигийный прилив: луна усиливает вероятность медуз у берега.",
+                labels: { season: "Сезон", wind: "Ветер", moon: "Луна", reports: "Отчеты" }
             },
             en: {
-                title: "Jellyfish Detector Da Nang",
+                title: "Jellyfish Detector",
                 statusTitle: "Danger Level",
-                loading: "Waking up servers...",
-                desc: "Based on calendar, wind direction, and live reports.",
+                loading: "Scanning radars...",
                 prompt: "Did you spot a jellyfish at the beach today?",
-                btnReport: "🚨 Report Jellyfish",
+                btnReport: "🚨 I saw a jellyfish",
                 btnThanks: "Thanks! Report recorded in radar.",
                 low: "Safe",
                 med: "Be Careful",
-                high: "Apocalypse"
+                high: "Apocalypse",
+                moonBanner: "Spring tide warning: Moon phase increases jellyfish likelihood near shore.",
+                labels: { season: "Season", wind: "Wind", moon: "Moon", reports: "Reports" }
             }
         };
 
-        // Инициализация языка
         let currentLang = tg?.initDataUnsafe?.user?.language_code === 'ru' ? 'ru' : 'en';
-        
-        // Инициализация темы с учетом гайдлайнов (TG -> localStorage -> default)
         let isDark = tg.colorScheme === 'dark';
-        if (localStorage.getItem('theme')) {
-            isDark = localStorage.getItem('theme') === 'dark';
-        }
+        if (localStorage.getItem('theme')) isDark = localStorage.getItem('theme') === 'dark';
         
+        let lastStatusData = null;
+
         function applyTheme() {
             if (isDark) {
                 document.documentElement.classList.add('dark');
@@ -146,25 +171,39 @@
             document.getElementById('app-title').innerText = t.title;
             document.getElementById('status-title').innerText = t.statusTitle;
             document.getElementById('loading-text').innerText = t.loading;
-            document.getElementById('danger-desc').innerText = t.desc;
             document.getElementById('report-prompt').innerText = t.prompt;
             document.getElementById('report-btn').innerText = t.btnReport;
+            document.getElementById('moon-banner-text').innerText = t.moonBanner;
             document.getElementById('lang-toggle').innerText = currentLang === 'ru' ? 'EN' : 'RU';
+            
+            document.getElementById('label-season').innerText = `📅 ${t.labels.season}`;
+            document.getElementById('label-wind').innerText = `💨 ${t.labels.wind}`;
+            document.getElementById('label-moon').innerText = `🌒 ${t.labels.moon}`;
+            document.getElementById('label-reports').innerText = `🚨 ${t.labels.reports}`;
+
+            if(lastStatusData) displayScore(lastStatusData);
         }
 
-        function displayScore(score) {
+        function formatModifier(num) {
+            if (num > 0) return `+${num}`;
+            if (num < 0) return `${num}`;
+            return "0";
+        }
+
+        function displayScore(data) {
             document.getElementById('loading-state').classList.add('hidden');
-            const resultState = document.getElementById('result-state');
-            resultState.classList.remove('hidden');
+            document.getElementById('result-state').classList.remove('hidden');
             
-            const scoreEl = document.getElementById('danger-score');
-            const badgeEl = document.getElementById('danger-badge');
+            const score = data.score;
             const t = translations[currentLang];
 
+            // Настройка главного бейджа
+            const scoreEl = document.getElementById('danger-score');
+            const badgeEl = document.getElementById('danger-badge');
             scoreEl.innerText = `${score}/10`;
             
             scoreEl.className = 'text-8xl font-black mb-2 tracking-tighter';
-            badgeEl.className = 'text-sm px-4 py-1 rounded-full font-medium mb-4 shadow-sm';
+            badgeEl.className = 'text-sm px-4 py-1 rounded-full font-medium mb-6 shadow-sm';
 
             if (score <= 3) {
                 scoreEl.classList.add('danger-low');
@@ -179,54 +218,60 @@
                 badgeEl.classList.add('bg-red-100', 'text-red-800');
                 badgeEl.innerText = t.high;
             }
+
+            // Заполнение факторов
+            if (data.factors) {
+                document.getElementById('val-season').innerText = data.factors.base || 2;
+                document.getElementById('val-wind').innerText = formatModifier(data.factors.weather || 0);
+                document.getElementById('val-moon').innerText = formatModifier(data.factors.astroScore || 0);
+                
+                const reportsTotal = data.factors.totalReportsToday || 0;
+                document.getElementById('val-reports').innerText = `${reportsTotal} (${formatModifier(data.factors.socialWeight || 0)})`;
+
+                // Логика баннера луны
+                const moonBanner = document.getElementById('moon-banner');
+                if (data.factors.astroScore > 0) {
+                    moonBanner.classList.remove('hidden');
+                } else {
+                    moonBanner.classList.add('hidden');
+                }
+            }
         }
 
-        // Запрос данных
         async function fetchStatus() {
             try {
                 const res = await fetch(`${API_URL}/api/status`);
                 if (!res.ok) throw new Error('Backend not responding');
-                const data = await res.json();
-                displayScore(data.score);
+                lastStatusData = await res.json();
+                displayScore(lastStatusData);
             } catch (err) {
                 console.warn("Using fallback data due to fetch error:", err);
-                // Фолбэк для локального тестирования без поднятого бэкенда
-                setTimeout(() => {
-                    displayScore(4); 
-                }, 1500);
+                lastStatusData = { score: 4, factors: { base: 4, weather: 0, astroScore: 0, socialWeight: 0, totalReportsToday: 0 } };
+                setTimeout(() => displayScore(lastStatusData), 1500);
             }
         }
 
-        // Обработка кнопки репорта
         document.getElementById('report-btn').addEventListener('click', async () => {
             const btn = document.getElementById('report-btn');
             const userId = tg?.initDataUnsafe?.user?.id || 'anonymous_' + Math.floor(Math.random()*1000);
-            
             btn.disabled = true;
             btn.style.opacity = '0.5';
             
             try {
-                // Попытка отправить реальный запрос
                 await fetch(`${API_URL}/api/report`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId }) 
                 });
             } catch (err) {
-                console.warn("Report fetch failed, simulating success locally");
+                console.warn("Report fetch failed");
             } finally {
                 document.getElementById('report-thanks').innerText = translations[currentLang].btnThanks;
                 document.getElementById('report-thanks').classList.remove('hidden');
-                
-                // Визуальное увеличение опасности для пользователя, нажавшего кнопку
-                const currentScore = parseInt(document.getElementById('danger-score').innerText);
-                if (!isNaN(currentScore)) {
-                    displayScore(Math.min(10, currentScore + 1)); 
-                }
+                setTimeout(fetchStatus, 1000); // Перезапрашиваем данные для обновления UI
             }
         });
 
-        // Слушатели событий
         document.getElementById('theme-toggle').addEventListener('click', () => {
             isDark = !isDark;
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -236,13 +281,8 @@
         document.getElementById('lang-toggle').addEventListener('click', () => {
             currentLang = currentLang === 'ru' ? 'en' : 'ru';
             updateTexts();
-            if(!document.getElementById('result-state').classList.contains('hidden')){
-                const currentScore = parseInt(document.getElementById('danger-score').innerText);
-                if(!isNaN(currentScore)) displayScore(currentScore);
-            }
         });
 
-        // Запуск
         applyTheme();
         updateTexts();
         fetchStatus();
