@@ -42,12 +42,11 @@
         }
         .animate-pulse-fast { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         
-        /* Цвета уровней опасности */
         .danger-low { color: #10B981; } 
         .danger-med { color: #F59E0B; } 
         .danger-high { color: #EF4444; } 
 
-        /* Анимация плавного покачивания для медуз на фоне */
+        /* Анимации фона */
         @keyframes floatJelly {
             0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.15; }
             50% { transform: translateY(-10px) translateX(5px) rotate(5deg); opacity: 0.35; }
@@ -58,6 +57,31 @@
             animation: floatJelly 4s ease-in-out infinite;
             pointer-events: none;
             user-select: none;
+        }
+        
+        @keyframes windMove {
+            0% { transform: translateX(100%); opacity: 0; }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { transform: translateX(-100%); opacity: 0; }
+        }
+        .wind-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(to right, transparent, rgba(156, 163, 175, 0.4), transparent);
+            animation: windMove 3s linear infinite;
+            pointer-events: none;
+        }
+        
+        .moon-bg {
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            font-size: 140px;
+            opacity: 0.04;
+            pointer-events: none;
+            user-select: none;
+            animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     </style>
 </head>
@@ -71,29 +95,12 @@
         </div>
     </div>
 
-    <div id="moon-banner" class="w-full max-w-md bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 p-4 rounded-2xl mb-4 hidden border border-indigo-200 dark:border-indigo-700">
-        <div class="flex items-center gap-3">
-            <span class="text-2xl">0️</span>
-            <p class="text-sm font-medium" id="moon-banner-text">Сизигийный прилив: луна увеличивает вероятность медуз у берега.</p>
-        </div>
-    </div>
-
-    <div class="card w-full max-w-md p-6 flex flex-col items-center mb-6 relative overflow-hidden min-h-[340px] justify-center">
+    <div class="card w-full max-w-md p-6 pt-5 pb-6 flex flex-col items-center mb-6 relative overflow-hidden">
         
-        <div id="jellyfish-bg" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
+        <div id="ambient-bg" class="absolute inset-0 overflow-hidden pointer-events-none z-0"></div>
 
         <div class="w-full flex justify-center items-center relative z-10 mb-2">
-            <h2 id="status-title" class="text-lg font-medium opacity-80">Danger Level</h2>
-            <button id="info-btn" class="ml-2 w-5 h-5 rounded-full bg-gray-200 dark:bg-gray-700 text-xs font-bold flex items-center justify-center opacity-70 hover:opacity-100 transition">?</button>
-            
-            <div id="factors-tooltip" class="hidden absolute top-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 rounded-xl shadow-xl z-30 w-full max-w-[280px]">
-                <div class="space-y-2 text-xs">
-                    <div class="flex justify-between"><span id="lbl-season">📅 Сезон</span><span id="v-season" class="font-bold">--</span></div>
-                    <div class="flex justify-between"><span id="lbl-wind">💨 Ветер</span><span id="v-wind" class="font-bold">--</span></div>
-                    <div class="flex justify-between"><span id="lbl-moon">🌒 Луна</span><span id="v-moon" class="font-bold">--</span></div>
-                    <div class="flex justify-between"><span id="lbl-reports">🚨 Отчеты</span><span id="v-reports" class="font-bold">--</span></div>
-                </div>
-            </div>
+            <h2 id="status-title" class="text-base font-bold opacity-60 uppercase tracking-widest">Danger Level</h2>
         </div>
         
         <div id="loading-state" class="flex flex-col items-center py-8 relative z-10">
@@ -102,20 +109,15 @@
         </div>
 
         <div id="result-state" class="hidden flex flex-col items-center w-full relative z-10">
-            <div class="text-7xl font-black mb-1 tracking-tighter" id="danger-score">--</div>
-            <div class="text-xs px-3 py-0.5 rounded-full font-medium mb-4 shadow-sm" id="danger-badge">Analyzing...</div>
+            <div class="text-7xl font-black mb-4 tracking-tighter" id="danger-score">--</div>
+            <div class="text-xs px-3 py-1 rounded-full font-medium mb-4 shadow-sm uppercase tracking-wide" id="danger-badge">Analyzing...</div>
             
-            <p class="text-center text-sm font-medium px-2 opacity-90 mb-6 min-h-[40px]" id="danger-desc">--</p>
+            <p class="text-center text-sm font-medium px-2 opacity-90 mb-6" id="danger-desc">--</p>
 
-            <div class="w-full px-2 mt-2">
-                <div class="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full relative">
-                    <div id="scale-pointer" class="w-4 h-4 bg-blue-500 rounded-full absolute -top-1 transition-all duration-500 shadow" style="left: 0%;"></div>
-                </div>
-                <div class="w-full flex justify-between text-[10px] opacity-40 font-bold mt-1.5 px-0.5">
-                    <span>0</span>
-                    <span>5</span>
-                    <span>10</span>
-                </div>
+            <div class="w-full text-left mt-2">
+                <p class="text-[11px] font-bold opacity-40 uppercase tracking-wider mb-3 pl-1" id="how-it-works-title">Как работает оценка (4 фактора)</p>
+                <div class="space-y-2" id="factors-accordion">
+                    </div>
             </div>
         </div>
     </div>
@@ -128,11 +130,24 @@
         <p id="report-thanks" class="text-green-500 text-sm mt-3 hidden font-medium transition-opacity">Thanks! Report recorded in radar.</p>
     </div>
 
+    <template id="accordion-item-template">
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition-all">
+            <button class="w-full flex justify-between items-center p-3 text-sm font-bold opacity-80 hover:opacity-100 transition focus:outline-none" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                <span class="factor-icon-name flex items-center gap-2"></span>
+                <div class="flex items-center gap-2">
+                    <span class="factor-val text-xs"></span>
+                    <span class="text-gray-400 text-[10px]">▼</span>
+                </div>
+            </button>
+            <div class="hidden px-3 pb-3 pt-1 text-[12px] opacity-70 leading-relaxed factor-desc">
+                </div>
+        </div>
+    </template>
+
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
         
-        // ВАЖНО: Замени на актуальный URL твоего бэкенда на Render
         const API_URL = 'https://jellyfish-backend-2p8f.onrender.com'; 
 
         const translations = {
@@ -146,11 +161,24 @@
                 low: "Безопасно",
                 med: "Будьте внимательны",
                 high: "Апокалипсис",
-                moonBanner: "Сизигийный прилив: луна увеличивает вероятность медуз у берега.",
                 descLow: "Море полностью безопасно для купания. Отличное время, чтобы поплавать!",
                 descMed: "Купаться можно, но посматривайте по сторонам. Возможны редкие медузы.",
                 descHigh: "Настоящий медузий апокалипсис! Заходить в воду крайне не рекомендуется.",
-                labels: { season: "Сезон", wind: "Ветер", moon: "Луна", reports: "Отчеты" }
+                
+                howItWorks: "Как работает оценка",
+                fSeason: "📅 Сезон",
+                fWind: "💨 Ветер",
+                fMoon: "🌒 Луна",
+                fReports: "🚨 Отчеты",
+                
+                // Описания факторов
+                seasonHighDesc: "С мая по сентябрь во Вьетнаме активный сезон. Исторически медуз в этот период больше всего.",
+                seasonLowDesc: "Сейчас низкий сезон. Базовая вероятность встретить медуз минимальна.",
+                windBadDesc: "Ветер дует с моря и прибивает теплые верхние слои воды с медузами прямо к берегу.",
+                windGoodDesc: "Направление ветра безопасное. Он дует с берега, отгоняя медуз дальше в море.",
+                moonBadDesc: "Сизигийный прилив (новолуние или полнолуние). Сильные изменения уровня воды несут медуз к пляжу.",
+                moonGoodDesc: "Обычная фаза луны. Приливы сейчас стабильные и не провоцируют выброс медуз.",
+                reportsDesc: "Количество людей, которые нажали кнопку 'Я видел медузу' за последние 24 часа."
             },
             en: {
                 title: "Jellyfish Detector Da Nang",
@@ -162,11 +190,23 @@
                 low: "Safe",
                 med: "Be Careful",
                 high: "Apocalypse",
-                moonBanner: "Spring tide warning: Moon phase increases jellyfish likelihood near shore.",
                 descLow: "The sea is perfectly safe for swimming. Great time to go to the beach!",
                 descMed: "Swimming is fine, but keep an eye out. Single jellyfish are possible.",
                 descHigh: "True jellyfish apocalypse! Swimming is strongly discouraged.",
-                labels: { season: "Season", wind: "Wind", moon: "Moon", reports: "Reports" }
+                
+                howItWorks: "How it works",
+                fSeason: "📅 Season",
+                fWind: "💨 Wind",
+                fMoon: "🌒 Moon",
+                fReports: "🚨 Reports",
+                
+                seasonHighDesc: "May to September is the active season in Vietnam. Historically, there are more jellyfish.",
+                seasonLowDesc: "It's low season. The base probability of encountering jellyfish is minimal.",
+                windBadDesc: "The wind is blowing from the sea, pushing the warm upper layers of water and jellyfish to the shore.",
+                windGoodDesc: "Safe wind direction. It blows from the shore, driving jellyfish away into the sea.",
+                moonBadDesc: "Spring tide (new or full moon). Strong water level changes carry jellyfish to the beach.",
+                moonGoodDesc: "Normal moon phase. Tides are stable and don't provoke jellyfish washing ashore.",
+                reportsDesc: "Number of people who clicked 'I saw a jellyfish' in the last 24 hours."
             }
         };
 
@@ -198,13 +238,8 @@
             document.getElementById('loading-text').innerText = t.loading;
             document.getElementById('report-prompt').innerText = t.prompt;
             document.getElementById('report-btn').innerText = t.btnReport;
-            document.getElementById('moon-banner-text').innerText = t.moonBanner;
             document.getElementById('lang-toggle').innerText = currentLang === 'ru' ? 'EN' : 'RU';
-            
-            document.getElementById('lbl-season').innerText = `📅 ${t.labels.season}`;
-            document.getElementById('lbl-wind').innerText = `💨 ${t.labels.wind}`;
-            document.getElementById('lbl-moon').innerText = `🌒 ${t.labels.moon}`;
-            document.getElementById('lbl-reports').innerText = `🚨 ${t.labels.reports}`;
+            document.getElementById('how-it-works-title').innerText = t.howItWorks;
 
             if(cachedData) displayScore(cachedData);
         }
@@ -213,32 +248,89 @@
             return num > 0 ? `+${num}` : `${num}`;
         }
 
-        // Функция генерации медуз на заднем плане карточки
-        function renderJellyfishBackground(score) {
-            const bg = document.getElementById('jellyfish-bg');
-            bg.innerHTML = ''; // Очищаем старые медузы
+        // Отрисовка атмосферного фона
+        function renderAmbientBackground(data) {
+            const bg = document.getElementById('ambient-bg');
+            bg.innerHTML = ''; 
             
-            let count = 0;
-            if (score >= 4 && score <= 7) count = 3;      // Немного медуз
-            else if (score >= 8) count = 12;               // Апокалипсис!
+            const score = data.score;
+            const f = data.factors || {};
 
-            for (let i = 0; i < count; i++) {
+            // 1. Медузы (зависят от общего балла)
+            let jellyCount = 0;
+            if (score >= 4 && score <= 7) jellyCount = 2;
+            else if (score >= 8) jellyCount = 10;
+
+            for (let i = 0; i < jellyCount; i++) {
                 const jelly = document.createElement('div');
                 jelly.className = 'floating-jelly';
                 jelly.innerText = '🪼';
-                
-                // Случайный размер и координаты внутри карточки
-                const size = score >= 8 ? Math.random() * 20 + 20 : Math.random() * 15 + 15;
+                const size = score >= 8 ? Math.random() * 20 + 20 : 18;
                 jelly.style.fontSize = `${size}px`;
-                jelly.style.left = `${Math.random() * 90}%`;
+                jelly.style.left = `${Math.random() * 85}%`;
                 jelly.style.top = `${Math.random() * 80}%`;
-                
-                // Случайная задержка анимации, чтобы двигались несинхронно
                 jelly.style.animationDelay = `${Math.random() * 3}s`;
                 jelly.style.animationDuration = `${Math.random() * 3 + 3}s`;
-                
                 bg.appendChild(jelly);
             }
+
+            // 2. Луна (если балл за луну > 0)
+            if (f.astroScore > 0) {
+                const moon = document.createElement('div');
+                moon.className = 'moon-bg';
+                moon.innerText = '🌕';
+                bg.appendChild(moon);
+            }
+
+            // 3. Ветер (если балл за ветер > 0, рисуем линии ветра)
+            if (f.weather > 0) {
+                for (let i = 0; i < 4; i++) {
+                    const wind = document.createElement('div');
+                    wind.className = 'wind-line w-full';
+                    wind.style.top = `${Math.random() * 80 + 10}%`;
+                    wind.style.animationDelay = `${Math.random() * 2}s`;
+                    wind.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                    bg.appendChild(wind);
+                }
+            }
+        }
+
+        // Построение списка аккордеона
+        function buildFactorsAccordion(factors) {
+            const container = document.getElementById('factors-accordion');
+            container.innerHTML = '';
+            const t = translations[currentLang];
+            const template = document.getElementById('accordion-item-template');
+
+            const createItem = (name, valueStr, desc, isBad) => {
+                const clone = template.content.cloneNode(true);
+                clone.querySelector('.factor-icon-name').innerText = name;
+                
+                const valEl = clone.querySelector('.factor-val');
+                valEl.innerText = valueStr;
+                if (isBad) valEl.classList.add('text-red-500');
+                else valEl.classList.add('text-blue-500', 'dark:text-blue-400');
+                
+                clone.querySelector('.factor-desc').innerText = desc;
+                container.appendChild(clone);
+            };
+
+            // Сезон
+            const base = factors.base || 2;
+            createItem(t.fSeason, `${base}/10`, base > 2 ? t.seasonHighDesc : t.seasonLowDesc, base > 2);
+
+            // Ветер
+            const windScore = factors.weather || 0;
+            createItem(t.fWind, formatMod(windScore), windScore > 0 ? t.windBadDesc : t.windGoodDesc, windScore > 0);
+
+            // Луна
+            const moonScore = factors.astroScore || 0;
+            createItem(t.fMoon, formatMod(moonScore), moonScore > 0 ? t.moonBadDesc : t.moonGoodDesc, moonScore > 0);
+
+            // Отчеты
+            const reps = factors.totalReportsToday || 0;
+            const socWeight = factors.socialWeight || 0;
+            createItem(t.fReports, `${reps} чел. (${formatMod(socWeight)})`, t.reportsDesc, socWeight > 0);
         }
 
         function displayScore(data) {
@@ -251,17 +343,11 @@
             const scoreEl = document.getElementById('danger-score');
             const badgeEl = document.getElementById('danger-badge');
             const descEl = document.getElementById('danger-desc');
-            const pointer = document.getElementById('scale-pointer');
 
             scoreEl.innerText = `${score}/10`;
-            
-            // Двигаем ползунок по оси (переводим балл в проценты)
-            pointer.style.left = `calc(${score * 10}% - 8px)`;
+            scoreEl.className = 'text-7xl font-black mb-3 tracking-tighter relative z-10';
+            badgeEl.className = 'text-[11px] px-3 py-1 rounded-full font-bold mb-4 shadow-sm uppercase tracking-wide relative z-10';
 
-            scoreEl.className = 'text-7xl font-black mb-1 tracking-tighter relative z-10';
-            badgeEl.className = 'text-xs px-3 py-0.5 rounded-full font-medium mb-4 shadow-sm relative z-10';
-
-            // Текстовое описание ситуации и цвета
             if (score <= 3) {
                 scoreEl.classList.add('danger-low');
                 badgeEl.classList.add('bg-green-100', 'text-green-800');
@@ -279,20 +365,10 @@
                 descEl.innerText = t.descHigh;
             }
 
-            // Рендерим фон
-            renderJellyfishBackground(score);
-
-            // Наполняем данными скрытый тултип
+            renderAmbientBackground(data);
+            
             if (data.factors) {
-                document.getElementById('v-season').innerText = data.factors.base || 2;
-                document.getElementById('v-wind').innerText = formatMod(data.factors.weather || 0);
-                document.getElementById('v-moon').innerText = formatMod(data.factors.astroScore || 0);
-                document.getElementById('v-reports').innerText = `${data.factors.totalReportsToday || 0} (${formatMod(data.factors.socialWeight || 0)})`;
-
-                // Отображение верхнего предупреждающего баннера луны
-                const moonBanner = document.getElementById('moon-banner');
-                if (data.factors.astroScore > 0) moonBanner.classList.remove('hidden');
-                else moonBanner.classList.add('hidden');
+                buildFactorsAccordion(data.factors);
             }
         }
 
@@ -304,25 +380,10 @@
                 displayScore(cachedData);
             } catch (err) {
                 console.warn("Fallback active");
-                // Имитация данных для локального тестирования
                 cachedData = { score: 5, factors: { base: 4, weather: 1, astroScore: 0, socialWeight: 0, totalReportsToday: 0 } };
-                setTimeout(() => displayScore(cachedData), 1200);
+                setTimeout(() => displayScore(cachedData), 1000);
             }
         }
-
-        // Интерактив для кнопки знака вопроса
-        const infoBtn = document.getElementById('info-btn');
-        const tooltip = document.getElementById('factors-tooltip');
-
-        infoBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Остановка всплытия, чтобы не срабатывал клик по документу
-            tooltip.classList.toggle('hidden');
-        });
-
-        // Клик в любое место экрана скрывает тултип факторов
-        document.addEventListener('click', () => {
-            tooltip.classList.add('hidden');
-        });
 
         document.getElementById('report-btn').addEventListener('click', async () => {
             const btn = document.getElementById('report-btn');
